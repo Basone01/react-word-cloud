@@ -1,4 +1,4 @@
-# react-jqcloud
+# react-jq-cloud
 
 A React + TypeScript word cloud component based on the layout algorithm from [jQCloud](https://github.com/lucaong/jQCloud).
 
@@ -31,7 +31,7 @@ Words are placed on a spiral (elliptic or rectangular) starting from the center 
 ## Installation
 
 ```bash
-npm install react-jqcloud
+npm install react-jq-cloud
 ```
 
 Peer dependencies (`react` and `react-dom` ≥ 17) must already be installed in your project.
@@ -41,8 +41,8 @@ Peer dependencies (`react` and `react-dom` ≥ 17) must already be installed in 
 ## Quick start
 
 ```tsx
-import { WordCloud } from 'react-jqcloud';
-import 'react-jqcloud/styles.css';
+import { WordCloud } from 'react-jq-cloud';
+import 'react-jq-cloud/styles.css';
 
 const words = [
   { text: 'React',      weight: 10 },
@@ -102,15 +102,15 @@ interface Word {
 
 ### CSS weight classes
 
-When you import `react-jqcloud/styles.css` each word receives a class `w1`–`w10` (1 = lightest, 10 = heaviest). You can override these classes in your own stylesheet:
+When you import `react-jq-cloud/styles.css` each word receives a class `w1`–`w10` (1 = lightest, 10 = heaviest). You can override these classes in your own stylesheet:
 
 ```css
 /* your-styles.css */
-.react-jqcloud .w10 { color: #e63946; }
-.react-jqcloud .w9  { color: #e63946; }
-.react-jqcloud .w8  { color: #457b9d; }
+.react-jq-cloud .w10 { color: #e63946; }
+.react-jq-cloud .w9  { color: #e63946; }
+.react-jq-cloud .w8  { color: #457b9d; }
 /* … */
-.react-jqcloud .w1  { color: #a8dadc; }
+.react-jq-cloud .w1  { color: #a8dadc; }
 ```
 
 ### Inline colors
@@ -277,8 +277,8 @@ Contributions are welcome — bug reports, feature requests, and pull requests a
 ### Development setup
 
 ```bash
-git clone https://github.com/your-org/react-jqcloud.git
-cd react-jqcloud
+git clone https://github.com/your-org/react-jq-cloud.git
+cd react-jq-cloud
 npm install
 ```
 

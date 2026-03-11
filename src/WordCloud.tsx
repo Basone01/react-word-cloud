@@ -156,7 +156,7 @@ export function WordCloud({
 
   return (
     <div
-      className={`react-jqcloud${className ? ` ${className}` : ''}`}
+      className={`react-jq-cloud${className ? ` ${className}` : ''}`}
       style={containerStyle}
     >
       {words.map((word, i) => {
