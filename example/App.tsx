@@ -3,7 +3,100 @@ import { WordCloud } from '../src/WordCloud';
 import '../src/styles.css';
 import type { Word } from '../src/types';
 
-// --- Demo 1: basic with shape toggle ---
+// ─── Shared code-block component ─────────────────────────────────────────────
+
+function CodeBlock({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(code.trim()).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+
+  // Minimal JSX/TSX token colouring — no external deps
+  const html = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // strings
+    .replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)/g,
+      '<span style="color:#a8ff78">$1</span>')
+    // jsx tags  &lt;WordCloud  &lt;/WordCloud
+    .replace(/(&lt;\/?[A-Z][A-Za-z]*)/g,
+      '<span style="color:#79b8ff">$1</span>')
+    // jsx closing >
+    .replace(/(\s)(\/&gt;|&gt;)/g,
+      '$1<span style="color:#79b8ff">$2</span>')
+    // prop names  word={  width={  etc.
+    .replace(/\b([a-zA-Z]+)(?==\{|=&quot;)/g,
+      '<span style="color:#ffab70">$1</span>')
+    // keywords
+    .replace(/\b(const|let|function|return|import|from|type|interface|export|default|true|false|null|undefined|if|else|=&gt;)\b/g,
+      '<span style="color:#f97583">$1</span>')
+    // comments
+    .replace(/(\/\/[^\n]*)/g,
+      '<span style="color:#6a737d;font-style:italic">$1</span>');
+
+  return (
+    <div style={{ position: 'relative', marginTop: 16 }}>
+      <pre style={{
+        margin: 0,
+        padding: '14px 16px',
+        background: '#0d1117',
+        borderRadius: 8,
+        fontSize: 13,
+        lineHeight: 1.6,
+        overflowX: 'auto',
+        color: '#e6edf3',
+        fontFamily: '"Fira Code", "Cascadia Code", Consolas, monospace',
+      }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+      <button
+        onClick={copy}
+        style={{
+          position: 'absolute', top: 8, right: 8,
+          padding: '3px 10px', fontSize: 11, borderRadius: 5,
+          border: '1px solid #444', background: '#21262d',
+          color: copied ? '#3fb950' : '#8b949e',
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}
+      >
+        {copied ? 'Copied!' : 'Copy'}
+      </button>
+    </div>
+  );
+}
+
+function ShowCode({ code }: { code: string }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div style={{ marginTop: 12 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          background: 'none', border: 'none', padding: 0,
+          cursor: 'pointer', color: '#0070f3', fontSize: 13,
+          display: 'flex', alignItems: 'center', gap: 4,
+        }}
+      >
+        <span style={{
+          display: 'inline-block',
+          transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+          transition: 'transform 150ms',
+          fontSize: 10,
+        }}>▶</span>
+        {open ? 'Hide code' : 'Show code'}
+      </button>
+      {open && <CodeBlock code={code} />}
+    </div>
+  );
+}
+
+// ─── Word data ────────────────────────────────────────────────────────────────
+
 const basicWords: Word[] = [
   { text: 'React', weight: 10 },
   { text: 'TypeScript', weight: 9 },
@@ -27,7 +120,6 @@ const basicWords: Word[] = [
   { text: 'CJS', weight: 1 },
 ];
 
-// --- Demo 2: words with links ---
 const linkedWords: Word[] = [
   { text: 'React', weight: 10, link: { href: 'https://react.dev', target: '_blank' } },
   { text: 'TypeScript', weight: 9, link: { href: 'https://www.typescriptlang.org', target: '_blank' } },
@@ -46,7 +138,6 @@ const linkedWords: Word[] = [
   { text: 'Bun', weight: 2, link: { href: 'https://bun.sh', target: '_blank' } },
 ];
 
-// --- Demo 3: very long keywords + overflow ---
 const longWords: Word[] = [
   { text: 'Supercalifragilisticexpialidocious', weight: 10 },
   { text: 'Electroencephalography', weight: 9 },
@@ -65,7 +156,6 @@ const longWords: Word[] = [
   { text: 'Cryptography', weight: 1 },
 ];
 
-// --- Demo 4: 50 keywords ---
 const fiftyWords: Word[] = [
   { text: 'React', weight: 10 },
   { text: 'Vue', weight: 9 },
@@ -119,7 +209,6 @@ const fiftyWords: Word[] = [
   { text: 'Storybook', weight: 4 },
 ];
 
-// --- Demo 5: delay / afterCloudRender ---
 const allDelayWords: Word[] = [
   { text: 'React', weight: 10 },
   { text: 'TypeScript', weight: 9 },
@@ -141,8 +230,133 @@ const allDelayWords: Word[] = [
   { text: 'Prettier', weight: 1 },
 ];
 
-type Phase = 'idle' | 'fetching' | 'laying-out' | 'done';
+// ─── Code snippets ────────────────────────────────────────────────────────────
 
+const SNIPPETS: Record<string, string> = {
+  basic: `\
+import { WordCloud } from '@basone01/react-jq-cloud';
+import '@basone01/react-jq-cloud/styles.css';
+
+const words = [
+  { text: 'React',      weight: 10 },
+  { text: 'TypeScript', weight: 9 },
+  { text: 'Vite',       weight: 8 },
+  // ...
+];
+
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  shape="elliptic" // or "rectangular"
+/>`,
+
+  links: `\
+const words = [
+  {
+    text: 'React',
+    weight: 10,
+    link: { href: 'https://react.dev', target: '_blank' },
+  },
+  {
+    text: 'Vite',
+    weight: 8,
+    link: 'https://vitejs.dev', // string shorthand
+  },
+];
+
+<WordCloud words={words} width={740} height={460} />`,
+
+  long: `\
+// Long words may overflow the container.
+// Toggle removeOverflowing to drop or keep them.
+
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  removeOverflowing={true}  // drop words that don't fit
+/>
+
+// — or —
+
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  removeOverflowing={false} // place them even if out of bounds
+/>`,
+
+  fifty: `\
+// 50 words — heavier words land closest to center.
+// Font sizes are linearly mapped across [minPx, maxPx].
+
+<WordCloud
+  words={words}       // Word[]
+  width={740}
+  height={460}
+  fontSizes={[12, 60]} // [minPx, maxPx] — default
+/>`,
+
+  delay: `\
+const [words, setWords] = useState([]);
+const [visible, setVisible] = useState(false);
+
+// Simulate async fetch
+function run() {
+  setTimeout(() => setWords(apiData), 1500);
+}
+
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  afterCloudRender={() => setVisible(true)}
+  style={{
+    opacity: visible ? 1 : 0,
+    transition: 'opacity 600ms ease',
+  }}
+/>`,
+
+  'word-delay': `\
+// Words appear one by one after layout (heaviest first).
+// onWordReveal fires on every step for progress tracking.
+
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  wordDelay={120} // ms between each word
+  onWordReveal={(revealed, total) => {
+    console.log(revealed + ' / ' + total);
+  }}
+  afterCloudRender={() => console.log('all done')}
+/>`,
+
+  shrink: `\
+// removeOverflowing (default) — drops words that don't fit
+<WordCloud words={words} width={740} height={460} />
+
+// removeOverflowing=false — places all words, may overflow
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  removeOverflowing={false}
+/>
+
+// shrinkToFit — scales font down until everything fits
+<WordCloud
+  words={words}
+  width={740}
+  height={460}
+  shrinkToFit
+/>`,
+};
+
+// ─── Self-contained demos ─────────────────────────────────────────────────────
+
+type Phase = 'idle' | 'fetching' | 'laying-out' | 'done';
 const FETCH_DELAY_MS = 1500;
 const LOG_MAX = 6;
 
@@ -165,7 +379,6 @@ function DelayDemo() {
     setLog([]);
     startRef.current = Date.now();
     addLog('Fetching words from API…');
-
     setTimeout(() => {
       addLog(`Received ${allDelayWords.length} words`);
       setWords(allDelayWords);
@@ -187,22 +400,20 @@ function DelayDemo() {
           onClick={run}
           disabled={phase === 'fetching' || phase === 'laying-out'}
           style={{
-            padding: '7px 18px',
-            borderRadius: 6,
-            border: 'none',
-            background: '#0070f3',
-            color: '#fff',
+            padding: '7px 18px', borderRadius: 6, border: 'none',
+            background: '#0070f3', color: '#fff', fontWeight: 600,
             cursor: phase === 'fetching' || phase === 'laying-out' ? 'not-allowed' : 'pointer',
             opacity: phase === 'fetching' || phase === 'laying-out' ? 0.6 : 1,
-            fontWeight: 600,
           }}
         >
-          {phase === 'idle' ? 'Simulate fetch & render' : phase === 'fetching' ? 'Fetching…' : phase === 'laying-out' ? 'Rendering…' : 'Run again'}
+          {phase === 'idle' ? 'Simulate fetch & render'
+            : phase === 'fetching' ? 'Fetching…'
+            : phase === 'laying-out' ? 'Rendering…'
+            : 'Run again'}
         </button>
         <PhaseIndicator phase={phase} />
       </div>
 
-      {/* Timeline log */}
       {log.length > 0 && (
         <div style={{
           fontFamily: 'monospace', fontSize: 12, background: '#111', color: '#0f0',
@@ -214,13 +425,10 @@ function DelayDemo() {
         </div>
       )}
 
-      {/* Cloud container — always reserves space */}
       <div style={{
         width: 740, height: 460, position: 'relative',
-        border: '1px solid #ddd', borderRadius: 8, background: '#fafafa',
-        overflow: 'hidden',
+        border: '1px solid #ddd', borderRadius: 8, background: '#fafafa', overflow: 'hidden',
       }}>
-        {/* Skeleton shown while fetching */}
         {(phase === 'idle' || phase === 'fetching') && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex',
@@ -232,20 +440,12 @@ function DelayDemo() {
             </span>
           </div>
         )}
-
-        {/* WordCloud fades in after afterCloudRender fires */}
         {words.length > 0 && (
           <div style={{
             position: 'absolute', inset: 0,
-            opacity: visible ? 1 : 0,
-            transition: 'opacity 600ms ease',
+            opacity: visible ? 1 : 0, transition: 'opacity 600ms ease',
           }}>
-            <WordCloud
-              words={words}
-              width={740}
-              height={460}
-              afterCloudRender={onRender}
-            />
+            <WordCloud words={words} width={740} height={460} afterCloudRender={onRender} />
           </div>
         )}
       </div>
@@ -254,16 +454,17 @@ function DelayDemo() {
         <code>afterCloudRender</code> fires after the two-pass layout completes. Use it to fade in,
         hide a spinner, or trigger analytics.
       </p>
+      <ShowCode code={SNIPPETS['delay']!} />
     </div>
   );
 }
 
 function PhaseIndicator({ phase }: { phase: Phase }) {
   const map: Record<Phase, { label: string; color: string }> = {
-    idle:        { label: 'idle',       color: '#999' },
-    fetching:    { label: 'fetching',   color: '#f0a500' },
-    'laying-out':{ label: 'laying out', color: '#0070f3' },
-    done:        { label: 'rendered',   color: '#0a0' },
+    idle:         { label: 'idle',       color: '#999' },
+    fetching:     { label: 'fetching',   color: '#f0a500' },
+    'laying-out': { label: 'laying out', color: '#0070f3' },
+    done:         { label: 'rendered',   color: '#0a0' },
   };
   const { label, color } = map[phase];
   return (
@@ -284,23 +485,14 @@ function Spinner() {
   );
 }
 
-// --- Demo 6: wordDelay prop ---
 function WordDelayDemo() {
   const [delay, setDelay] = useState(120);
   const [cloudKey, setCloudKey] = useState(0);
   const [progress, setProgress] = useState<{ count: number; total: number } | null>(null);
   const [done, setDone] = useState(false);
 
-  function replay() {
-    setCloudKey(k => k + 1);
-    setProgress(null);
-    setDone(false);
-  }
-
-  function applyDelay(ms: number) {
-    setDelay(ms);
-    replay();
-  }
+  function replay() { setCloudKey(k => k + 1); setProgress(null); setDone(false); }
+  function applyDelay(ms: number) { setDelay(ms); replay(); }
 
   const pct = progress ? Math.round((progress.count / progress.total) * 100) : 0;
 
@@ -309,33 +501,17 @@ function WordDelayDemo() {
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           Delay per word:
-          <input
-            type="range"
-            min={0}
-            max={500}
-            step={10}
-            value={delay}
-            onChange={e => applyDelay(Number(e.target.value))}
-            style={{ width: 140 }}
-          />
+          <input type="range" min={0} max={500} step={10} value={delay}
+            onChange={e => applyDelay(Number(e.target.value))} style={{ width: 140 }} />
           <code style={{ minWidth: 52, fontSize: 13 }}>{delay}ms</code>
         </label>
-
-        <button
-          onClick={replay}
-          style={{
-            padding: '5px 14px', borderRadius: 6,
-            border: '1px solid #ccc', cursor: 'pointer', background: '#fff',
-          }}
-        >
-          ↺ Replay
-        </button>
-
+        <button onClick={replay} style={{
+          padding: '5px 14px', borderRadius: 6,
+          border: '1px solid #ccc', cursor: 'pointer', background: '#fff',
+        }}>↺ Replay</button>
         {progress && (
           <span style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontFamily: 'monospace' }}>
-              {progress.count} / {progress.total}
-            </span>
+            <span style={{ fontFamily: 'monospace' }}>{progress.count} / {progress.total}</span>
             <span style={{
               display: 'inline-block', width: 80, height: 6,
               background: '#eee', borderRadius: 3, overflow: 'hidden',
@@ -367,38 +543,23 @@ function WordDelayDemo() {
         Words appear heaviest-first (layout order). <code>onWordReveal(count, total)</code> fires
         on each step; <code>afterCloudRender</code> fires when all words are visible.
       </p>
+      <ShowCode code={SNIPPETS['word-delay']!} />
     </div>
   );
 }
 
-// --- Demo 7: shrinkToFit ---
 type FitMode = 'removeOverflowing' | 'allowOverflow' | 'shrinkToFit';
 
 function ShrinkToFitDemo() {
   const [mode, setMode] = useState<FitMode>('removeOverflowing');
   const [cloudKey, setCloudKey] = useState(0);
 
-  function setModeAndReset(m: FitMode) {
-    setMode(m);
-    setCloudKey(k => k + 1);
-  }
+  function setModeAndReset(m: FitMode) { setMode(m); setCloudKey(k => k + 1); }
 
   const modes: { key: FitMode; label: string; description: string }[] = [
-    {
-      key: 'removeOverflowing',
-      label: 'removeOverflowing',
-      description: 'Words that don\'t fit are dropped (default)',
-    },
-    {
-      key: 'allowOverflow',
-      label: 'removeOverflowing=false',
-      description: 'All words placed; may extend outside container',
-    },
-    {
-      key: 'shrinkToFit',
-      label: 'shrinkToFit',
-      description: 'Font scale reduced until every word fits inside bounds',
-    },
+    { key: 'removeOverflowing', label: 'removeOverflowing', description: "Words that don't fit are dropped (default)" },
+    { key: 'allowOverflow',     label: 'removeOverflowing=false', description: 'All words placed; may extend outside container' },
+    { key: 'shrinkToFit',       label: 'shrinkToFit', description: 'Font scale reduced until every word fits inside bounds' },
   ];
 
   const props = {
@@ -410,20 +571,12 @@ function ShrinkToFitDemo() {
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
         {modes.map(m => (
-          <button
-            key={m.key}
-            onClick={() => setModeAndReset(m.key)}
-            style={{
-              padding: '6px 14px', borderRadius: 6,
-              border: '1px solid #ccc',
-              background: mode === m.key ? '#0070f3' : '#fff',
-              color: mode === m.key ? '#fff' : '#333',
-              cursor: 'pointer',
-              fontWeight: mode === m.key ? 600 : 400,
-            }}
-          >
-            {m.label}
-          </button>
+          <button key={m.key} onClick={() => setModeAndReset(m.key)} style={{
+            padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc',
+            background: mode === m.key ? '#0070f3' : '#fff',
+            color: mode === m.key ? '#fff' : '#333',
+            cursor: 'pointer', fontWeight: mode === m.key ? 600 : 400,
+          }}>{m.label}</button>
         ))}
       </div>
       <p style={{ margin: '0 0 12px', color: '#555', fontSize: 13 }}>
@@ -441,20 +594,23 @@ function ShrinkToFitDemo() {
         50 words. With <code>shrinkToFit</code>, font sizes are scaled down (up to ×0.30 min)
         until all words fit without any being dropped.
       </p>
+      <ShowCode code={SNIPPETS['shrink']!} />
     </div>
   );
 }
 
+// ─── Main App ─────────────────────────────────────────────────────────────────
+
 type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink';
 
 const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }[] = [
-  { key: 'basic', label: 'Basic', words: basicWords, description: '20 words — shape toggle' },
-  { key: 'links', label: 'With Links', words: linkedWords, description: '15 clickable words linking to external sites' },
-  { key: 'long', label: 'Long Keywords', words: longWords, description: 'Very long words — observe overflow behaviour with removeOverflowing on/off' },
-  { key: 'fifty', label: '50 Keywords', words: fiftyWords, description: '50 tech keywords across frameworks, languages, databases, and tools' },
-  { key: 'delay', label: 'Async fetch', words: [], description: 'Simulates async data loading: spinner while fetching, then afterCloudRender triggers a fade-in.' },
-  { key: 'word-delay', label: 'Word delay', words: [], description: 'wordDelay prop: words appear one by one (heaviest first). Drag the slider to control the interval.' },
-  { key: 'shrink', label: 'Shrink to fit', words: [], description: 'Compare removeOverflowing vs allowOverflow vs shrinkToFit on 50 words.' },
+  { key: 'basic',      label: 'Basic',           words: basicWords,   description: '20 words — shape toggle' },
+  { key: 'links',      label: 'With Links',       words: linkedWords,  description: '15 clickable words linking to external sites' },
+  { key: 'long',       label: 'Long Keywords',    words: longWords,    description: 'Very long words — observe overflow behaviour with removeOverflowing on/off' },
+  { key: 'fifty',      label: '50 Keywords',      words: fiftyWords,   description: '50 tech keywords across frameworks, languages, databases, and tools' },
+  { key: 'delay',      label: 'Async fetch',      words: [],           description: 'Simulates async data loading: spinner while fetching, then afterCloudRender triggers a fade-in.' },
+  { key: 'word-delay', label: 'Word delay',        words: [],           description: 'wordDelay prop: words appear one by one (heaviest first). Drag the slider to control the interval.' },
+  { key: 'shrink',     label: 'Shrink to fit',    words: [],           description: 'Compare removeOverflowing vs allowOverflow vs shrinkToFit on 50 words.' },
 ];
 
 export default function App() {
@@ -465,8 +621,8 @@ export default function App() {
   const [clicked, setClicked] = useState<string | null>(null);
 
   const current = DEMOS.find(d => d.key === demo)!;
+  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink';
 
-  // Inject @keyframes for spinner once
   useEffect(() => {
     const id = 'rwc-spin-style';
     if (!document.getElementById(id)) {
@@ -489,13 +645,10 @@ export default function App() {
             key={d.key}
             onClick={() => { setDemo(d.key); setClicked(null); }}
             style={{
-              padding: '6px 14px',
-              borderRadius: 6,
-              border: '1px solid #ccc',
+              padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc',
               background: demo === d.key ? '#0070f3' : '#fff',
               color: demo === d.key ? '#fff' : '#333',
-              cursor: 'pointer',
-              fontWeight: demo === d.key ? 600 : 400,
+              cursor: 'pointer', fontWeight: demo === d.key ? 600 : 400,
             }}
           >
             {d.label}
@@ -506,43 +659,24 @@ export default function App() {
       <p style={{ margin: '0 0 12px', color: '#555', fontSize: 13 }}>{current.description}</p>
 
       {/* Controls — hidden for self-contained demos */}
-      {demo !== 'delay' && demo !== 'word-delay' && demo !== 'shrink' && (
+      {!isSelfContained && (
         <div style={{ display: 'flex', gap: 20, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: 12 }}>
             {(['elliptic', 'rectangular'] as const).map(s => (
               <label key={s} style={{ cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  value={s}
-                  checked={shape === s}
-                  onChange={() => setShape(s)}
-                />{' '}
+                <input type="radio" value={s} checked={shape === s} onChange={() => setShape(s)} />{' '}
                 {s.charAt(0).toUpperCase() + s.slice(1)}
               </label>
             ))}
           </div>
           <label style={{ cursor: 'pointer', display: 'flex', gap: 6, alignItems: 'center' }}>
-            <input
-              type="checkbox"
-              checked={shrinkToFit}
-              onChange={e => {
-                setShrinkToFit(e.target.checked);
-                if (e.target.checked) setRemoveOverflowing(true);
-              }}
-            />
+            <input type="checkbox" checked={shrinkToFit}
+              onChange={e => { setShrinkToFit(e.target.checked); if (e.target.checked) setRemoveOverflowing(true); }} />
             Shrink to fit
           </label>
-          <label style={{
-            cursor: shrinkToFit ? 'not-allowed' : 'pointer',
-            display: 'flex', gap: 6, alignItems: 'center',
-            opacity: shrinkToFit ? 0.4 : 1,
-          }}>
-            <input
-              type="checkbox"
-              checked={removeOverflowing}
-              disabled={shrinkToFit}
-              onChange={e => setRemoveOverflowing(e.target.checked)}
-            />
+          <label style={{ cursor: shrinkToFit ? 'not-allowed' : 'pointer', display: 'flex', gap: 6, alignItems: 'center', opacity: shrinkToFit ? 0.4 : 1 }}>
+            <input type="checkbox" checked={removeOverflowing} disabled={shrinkToFit}
+              onChange={e => setRemoveOverflowing(e.target.checked)} />
             Remove overflowing
           </label>
           {clicked && (
@@ -578,6 +712,7 @@ export default function App() {
               Words are hyperlinks — click to open in a new tab.
             </p>
           )}
+          <ShowCode code={SNIPPETS[demo]!} />
         </>
       )}
     </div>

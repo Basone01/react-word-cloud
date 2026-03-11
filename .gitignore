@@ -9,6 +9,7 @@
 # production
 /build
 /dist
+/dist-example
 
 # misc
 .DS_Store
