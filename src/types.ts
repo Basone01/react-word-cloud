@@ -23,6 +23,7 @@ export interface ReactJQCloudProps {
   colors?: string[];
   className?: string;
   style?: React.CSSProperties;
+  spacing?: number;             // extra px padding around each word's bounding box (default 0)
   shrinkToFit?: boolean;        // reduce font scale until all words fit within bounds
   wordDelay?: number;           // ms between each word appearing (0 = all at once)
   onWordClick?: (word: Word, event: React.MouseEvent) => void;

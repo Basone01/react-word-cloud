@@ -14,6 +14,7 @@ export function ReactJQCloud({
   center,
   shape = "elliptic",
   removeOverflowing = true,
+  spacing = 0,
   shrinkToFit = false,
   fontSizes = [12, 60],
   fontFamily,
@@ -108,6 +109,7 @@ export function ReactJQCloud({
     layoutWidth,
     height,
     shape,
+    spacing,
     shrinkToFit,
     fontSizes[0],
     fontSizes[1],
@@ -142,6 +144,7 @@ export function ReactJQCloud({
         shape,
         removeOverflowing: shrinkToFit ? true : removeOverflowing,
         fontSizes: currentFontSizes,
+        spacing,
       });
 
       if (shrinkToFit) {
@@ -159,6 +162,7 @@ export function ReactJQCloud({
             shape,
             removeOverflowing: true,
             fontSizes: currentFontSizes,
+            spacing,
           });
         }
         setActiveFontSizes(currentFontSizes);

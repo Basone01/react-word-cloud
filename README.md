@@ -78,6 +78,7 @@ The stylesheet provides the default `w1`–`w10` color classes. You can skip it 
 | `fontSizes` | `[number, number]` | `[12, 60]` | `[minPx, maxPx]` — font size range mapped linearly to the weight range. |
 | `fontFamily` | `string` | inherited | Font family applied to every word. |
 | `removeOverflowing` | `boolean` | `true` | Drop words whose bounding box extends outside the container. |
+| `spacing` | `number` | `0` | Extra pixels of padding added around each word's bounding box during collision detection. Increase to add breathing room between words. |
 | `shrinkToFit` | `boolean` | `false` | Iteratively reduce font scale (down to 30 % of original) until all words fit inside the container. Overrides `removeOverflowing`. |
 | `wordDelay` | `number` | `0` | Milliseconds between each word appearing after layout. Words reveal in weight-descending order (heaviest first). `0` = all words appear at once. |
 | `colors` | `string[]` | — | 10-element color array indexed by weight class (index 0 = class `w1`). Overrides CSS classes. |

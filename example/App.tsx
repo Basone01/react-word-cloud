@@ -253,7 +253,7 @@ const words = [
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   shape="elliptic" // or "rectangular"
 />`,
@@ -272,7 +272,7 @@ const words = [
   },
 ];
 
-<ReactJQCloud words={words} width={740} height={460} />`,
+<ReactJQCloud words={words} width="100%" height={460} />`,
 
   long: `\
 // Long words may overflow the container.
@@ -280,7 +280,7 @@ const words = [
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   removeOverflowing={true}  // drop words that don't fit
 />
@@ -289,7 +289,7 @@ const words = [
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   removeOverflowing={false} // place them even if out of bounds
 />`,
@@ -300,7 +300,7 @@ const words = [
 
 <ReactJQCloud
   words={words}       // Word[]
-  width={740}
+  width="100%"
   height={460}
   fontSizes={[12, 60]} // [minPx, maxPx] — default
 />`,
@@ -316,7 +316,7 @@ function run() {
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   afterCloudRender={() => setVisible(true)}
   style={{
@@ -331,7 +331,7 @@ function run() {
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   wordDelay={120} // ms between each word
   onWordReveal={(revealed, total) => {
@@ -342,12 +342,12 @@ function run() {
 
   shrink: `\
 // removeOverflowing (default) — drops words that don't fit
-<ReactJQCloud words={words} width={740} height={460} />
+<ReactJQCloud words={words} width="100%" height={460} />
 
 // removeOverflowing=false — places all words, may overflow
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   removeOverflowing={false}
 />
@@ -355,7 +355,7 @@ function run() {
 // shrinkToFit — scales font down until everything fits
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   shrinkToFit
 />`,
@@ -389,7 +389,7 @@ const words = [
   },
 ];
 
-<ReactJQCloud words={words} width={740} height={460} />`,
+<ReactJQCloud words={words} width="100%" height={460} />`,
 
   tooltip: `\
 // renderTooltip receives the Word object and returns any React node.
@@ -397,7 +397,7 @@ const words = [
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   renderTooltip={(word) => (
     <div style={{
@@ -420,9 +420,20 @@ const words = [
 
 <ReactJQCloud
   words={words}
-  width={740}
+  width="100%"
   height={460}
   renderText={(word) => '#' + word.text}
+/>`,
+
+  spacing: `\
+// spacing adds extra px padding around each word's bounding box
+// during collision detection — words won't be placed this close together.
+
+<ReactJQCloud
+  words={words}
+  width="100%"
+  height={460}
+  spacing={6}
 />`,
 };
 
@@ -517,7 +528,7 @@ function DelayDemo() {
             position: 'absolute', inset: 0,
             opacity: visible ? 1 : 0, transition: 'opacity 600ms ease',
           }}>
-            <ReactJQCloud words={words} width={740} height={460} afterCloudRender={onRender} />
+            <ReactJQCloud words={words} width="100%" height={460} afterCloudRender={onRender} />
           </div>
         )}
       </div>
@@ -603,7 +614,7 @@ function WordDelayDemo() {
       <ReactJQCloud
         key={cloudKey}
         words={allDelayWords}
-        width={740}
+        width="100%"
         height={460}
         wordDelay={delay}
         onWordReveal={(count, total) => setProgress({ count, total })}
@@ -657,7 +668,7 @@ function ShrinkToFitDemo() {
       <ReactJQCloud
         key={cloudKey}
         words={fiftyWords}
-        width={740}
+        width="100%"
         height={460}
         {...props}
         style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
@@ -712,7 +723,7 @@ function HtmlDemo() {
     <div>
       <ReactJQCloud
         words={htmlWords}
-        width={740}
+        width="100%"
         height={460}
         style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
       />
@@ -730,7 +741,7 @@ function TooltipDemo() {
     <div>
       <ReactJQCloud
         words={basicWords}
-        width={740}
+        width="100%"
         height={460}
         renderTooltip={(word) => (
           <div style={{
@@ -763,7 +774,7 @@ function HashtagDemo() {
     <div>
       <ReactJQCloud
         words={basicWords}
-        width={740}
+        width="100%"
         height={460}
         renderText={(word) => '#' + word.text}
         style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
@@ -777,9 +788,58 @@ function HashtagDemo() {
   );
 }
 
+function SpacingDemo() {
+  const [spacing, setSpacing] = useState(0);
+  const [shrinkToFit, setShrinkToFit] = useState(false);
+  const [removeOverflowing, setRemoveOverflowing] = useState(true);
+  const [cloudKey, setCloudKey] = useState(0);
+
+  function reset() { setCloudKey(k => k + 1); }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          Spacing:
+          <input type="range" min={0} max={20} step={1} value={spacing}
+            onChange={e => { setSpacing(Number(e.target.value)); reset(); }} style={{ width: 140 }} />
+          <code style={{ minWidth: 36, fontSize: 13 }}>{spacing}px</code>
+        </label>
+        <label style={{ cursor: 'pointer', display: 'flex', gap: 6, alignItems: 'center' }}>
+          <input type="checkbox" checked={shrinkToFit}
+            onChange={e => { setShrinkToFit(e.target.checked); if (e.target.checked) setRemoveOverflowing(true); reset(); }} />
+          Shrink to fit
+        </label>
+        <label style={{ cursor: shrinkToFit ? 'not-allowed' : 'pointer', display: 'flex', gap: 6, alignItems: 'center', opacity: shrinkToFit ? 0.4 : 1 }}>
+          <input type="checkbox" checked={removeOverflowing} disabled={shrinkToFit}
+            onChange={e => { setRemoveOverflowing(e.target.checked); reset(); }} />
+          Remove overflowing
+        </label>
+      </div>
+
+      <ReactJQCloud
+        key={cloudKey}
+        words={fiftyWords}
+        width="100%"
+        height={460}
+        spacing={spacing}
+        shrinkToFit={shrinkToFit}
+        removeOverflowing={removeOverflowing}
+        style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
+      />
+
+      <p style={{ marginTop: 8, fontSize: 12, color: '#888' }}>
+        50 words. Drag the slider to add breathing room between words.
+        <code> spacing</code> inflates each word's collision box without changing its rendered size.
+      </p>
+      <ShowCode code={SNIPPETS['spacing']!} />
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
-type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html' | 'tooltip' | 'hashtag';
+type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html' | 'tooltip' | 'hashtag' | 'spacing';
 
 const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }[] = [
   { key: 'basic',      label: 'Basic',           words: basicWords,   description: '20 words — shape toggle' },
@@ -793,6 +853,7 @@ const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }
   { key: 'html',       label: 'HTML words',        words: [],           description: 'Use the html field to embed emoji or arbitrary inline HTML inside each word.' },
   { key: 'tooltip',    label: 'Tooltip',           words: [],           description: 'renderTooltip prop: hover a word to show a custom tooltip rendered in a portal.' },
   { key: 'hashtag',    label: 'Hashtag prefix',    words: [],           description: 'renderText prop: prepend "#" to every word label without changing layout sizing.' },
+  { key: 'spacing',    label: 'Spacing',           words: [],           description: '50 words — drag the slider to add breathing room between words via the spacing prop.' },
 ];
 
 export default function App() {
@@ -803,7 +864,7 @@ export default function App() {
   const [clicked, setClicked] = useState<string | null>(null);
 
   const current = DEMOS.find(d => d.key === demo)!;
-  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html' || demo === 'tooltip' || demo === 'hashtag';
+  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html' || demo === 'tooltip' || demo === 'hashtag' || demo === 'spacing';
 
   useEffect(() => {
     const id = 'rwc-spin-style';
@@ -816,7 +877,7 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: 24, maxWidth: 800 }}>
+    <div style={{ fontFamily: 'sans-serif', padding: 24, maxWidth: 1280, margin: '0 auto' }}>
       <h1 style={{ margin: '0 0 4px' }}>React JQCloud</h1>
       <p style={{ margin: '0 0 20px', color: '#666', fontSize: 14 }}>Demos</p>
 
@@ -884,12 +945,14 @@ export default function App() {
         <TooltipDemo key="tooltip" />
       ) : demo === 'hashtag' ? (
         <HashtagDemo key="hashtag" />
+      ) : demo === 'spacing' ? (
+        <SpacingDemo key="spacing" />
       ) : (
         <>
           <ReactJQCloud
             key={`${demo}-${shape}-${removeOverflowing}-${shrinkToFit}`}
             words={current.words}
-            width={740}
+            width="100%"
             height={460}
             shape={shape}
             removeOverflowing={removeOverflowing}

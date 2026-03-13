@@ -67,11 +67,12 @@ export function computeLayout(
     shape: "elliptic" | "rectangular";
     removeOverflowing: boolean;
     fontSizes: [number, number]; // [minPx, maxPx]
+    spacing?: number; // extra px padding around each word's bounding box
   },
 ): (WordPosition | null)[] {
   if (words.length === 0) return [];
 
-  const { width, height, center, shape, removeOverflowing, fontSizes } =
+  const { width, height, center, shape, removeOverflowing, fontSizes, spacing = 0 } =
     options;
 
   // Aspect ratio stretches the horizontal step of the elliptic spiral so the
@@ -122,6 +123,9 @@ export function computeLayout(
     const weightClass = getWeightClass(word.weight);
     const w = rect.width;
     const h = rect.height;
+    // Padded dimensions used only for collision/overflow checks.
+    const pw = w + spacing * 2;
+    const ph = h + spacing * 2;
 
     // Start at the canvas center, anchored so the word is visually centred.
     let left = center.x - w / 2;
@@ -138,7 +142,8 @@ export function computeLayout(
 
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        const candidate: PlacedRect = { left, top, width: w, height: h };
+        // Padded rect for collision/bounds checks; render rect uses left/top/w/h.
+        const candidate: PlacedRect = { left: left - spacing, top: top - spacing, width: pw, height: ph };
 
         // Step 4a: collision check — test against every already-placed word.
         const hasCollision = placed.some((p) => overlaps(candidate, p));
@@ -150,7 +155,7 @@ export function computeLayout(
             result[index] = null;
           } else {
             result[index] = { left, top, fontSize, weightClass };
-            // Register this word's bounding box so future words avoid it.
+            // Register this word's padded bounding box so future words avoid it.
             placed.push(candidate);
           }
           placed_flag = true;
@@ -201,7 +206,7 @@ export function computeLayout(
 
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        const candidate: PlacedRect = { left, top, width: w, height: h };
+        const candidate: PlacedRect = { left: left - spacing, top: top - spacing, width: pw, height: ph };
 
         // Step 4a: collision check.
         const hasCollision = placed.some((p) => overlaps(candidate, p));
