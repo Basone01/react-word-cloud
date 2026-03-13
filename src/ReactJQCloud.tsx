@@ -256,6 +256,7 @@ export function ReactJQCloud({
               typeof word.link === "object" ? word.link.target : undefined
             }
             onClick={handleClick}
+            {...word.html}
           >
             {word.text}
           </a>
@@ -272,6 +273,7 @@ export function ReactJQCloud({
             className={classes}
             style={spanStyle}
             onClick={!word.link ? handleClick : undefined}
+            {...word.html}
           >
             {inner}
           </span>

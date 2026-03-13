@@ -3,6 +3,9 @@
   "version": "0.4.0",
   "description": "React word cloud component based on jQCloud layout algorithm",
   "repository": "https://github.com/Basone01/react-jq-cloud",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "keywords": [
     "react",
     "word-cloud",

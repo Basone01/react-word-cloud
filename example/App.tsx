@@ -234,6 +234,11 @@ const allDelayWords: Word[] = [
 
 const fluidWords: Word[] = basicWords;
 
+const htmlWords: Word[] = basicWords.map((w, i) => ({
+  ...w,
+  html: { 'data-index': String(i), 'data-weight': String(w.weight), 'aria-label': w.text },
+}));
+
 const SNIPPETS: Record<string, string> = {
   basic: `\
 import { ReactJQCloud } from '@basone01/react-jq-cloud';
@@ -366,6 +371,25 @@ function run() {
     height={320}
   />
 </div>`,
+
+  html: `\
+// Use the html field to add arbitrary HTML attributes to each word's <span>.
+// Useful for data-* attributes, aria-* attributes, or any other HTML attribute.
+
+const words = [
+  {
+    text: 'React',
+    weight: 10,
+    html: { 'data-id': 'react', 'aria-label': 'React framework' },
+  },
+  {
+    text: 'TypeScript',
+    weight: 9,
+    html: { 'data-id': 'typescript', 'data-category': 'language' },
+  },
+];
+
+<ReactJQCloud words={words} width={740} height={460} />`,
 };
 
 // ─── Self-contained demos ─────────────────────────────────────────────────────
@@ -649,9 +673,27 @@ function FluidDemo() {
   );
 }
 
+function HtmlDemo() {
+  return (
+    <div>
+      <ReactJQCloud
+        words={htmlWords}
+        width={740}
+        height={460}
+        style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
+      />
+      <p style={{ marginTop: 8, fontSize: 12, color: '#888' }}>
+        Each word has <code>data-index</code>, <code>data-weight</code>, and <code>aria-label</code> attributes
+        added via the <code>html</code> field. Inspect the DOM to see them on each <code>&lt;span&gt;</code>.
+      </p>
+      <ShowCode code={SNIPPETS['html']!} />
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
-type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid';
+type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html';
 
 const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }[] = [
   { key: 'basic',      label: 'Basic',           words: basicWords,   description: '20 words — shape toggle' },
@@ -662,6 +704,7 @@ const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }
   { key: 'word-delay', label: 'Word delay',        words: [],           description: 'wordDelay prop: words appear one by one (heaviest first). Drag the slider to control the interval.' },
   { key: 'shrink',     label: 'Shrink to fit',    words: [],           description: 'Compare removeOverflowing vs allowOverflow vs shrinkToFit on 50 words.' },
   { key: 'fluid',      label: 'Fluid width',       words: [],           description: 'Pass width="100%" to fill the container. A ResizeObserver re-lays out the cloud on every resize.' },
+  { key: 'html',       label: 'HTML words',        words: [],           description: 'Use the html field to embed emoji or arbitrary inline HTML inside each word.' },
 ];
 
 export default function App() {
@@ -672,7 +715,7 @@ export default function App() {
   const [clicked, setClicked] = useState<string | null>(null);
 
   const current = DEMOS.find(d => d.key === demo)!;
-  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid';
+  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html';
 
   useEffect(() => {
     const id = 'rwc-spin-style';
@@ -747,6 +790,8 @@ export default function App() {
         <ShrinkToFitDemo key="shrink" />
       ) : demo === 'fluid' ? (
         <FluidDemo key="fluid" />
+      ) : demo === 'html' ? (
+        <HtmlDemo key="html" />
       ) : (
         <>
           <ReactJQCloud

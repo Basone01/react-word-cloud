@@ -3,6 +3,7 @@ import type React from 'react';
 export interface Word {
   text: string;
   weight: number;
+  html?: Record<string, string>;
   link?: string | { href: string; target?: string; [key: string]: string | undefined };
   color?: string;
   className?: string;

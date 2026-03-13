@@ -24,6 +24,7 @@ Words are placed on a spiral (elliptic or rectangular) starting from the center 
   - [Track reveal progress](#track-reveal-progress)
   - [Fit all words with shrinkToFit](#fit-all-words-with-shrinktofit)
   - [React to render completion](#react-to-render-completion)
+  - [Embedding HTML in words](#embedding-html-in-words)
   - [Fluid / responsive width](#fluid--responsive-width)
   - [Async data loading pattern](#async-data-loading-pattern)
 - [Credits](#credits)
@@ -93,6 +94,7 @@ interface Word {
   weight: number;  // relative importance — drives font size and color class
 
   // optional
+  html?:      Record<string, string>;  // extra HTML attributes spread onto the word's <span>
   link?:      string | { href: string; target?: string; [key: string]: string | undefined };
   color?:     string;     // per-word inline color (overrides CSS class and colors prop)
   className?: string;     // extra class added to this word's <span>
@@ -232,6 +234,27 @@ const [ready, setReady] = useState(false);
 ```
 
 When `wordDelay` is set, `afterCloudRender` fires after the **last word** is revealed, not immediately after layout.
+
+### Adding HTML attributes to words
+
+Set `word.html` to a `Record<string, string>` to spread arbitrary HTML attributes onto the word's `<span>`. Useful for `data-*`, `aria-*`, or any other attribute.
+
+```tsx
+const words = [
+  {
+    text: 'React',
+    weight: 10,
+    html: { 'data-id': 'react', 'aria-label': 'React framework' },
+  },
+  {
+    text: 'TypeScript',
+    weight: 9,
+    html: { 'data-id': 'typescript', 'data-category': 'language' },
+  },
+];
+
+<ReactJQCloud words={words} width={600} height={400} />
+```
 
 ### Fluid / responsive width
 
