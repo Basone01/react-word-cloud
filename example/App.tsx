@@ -435,6 +435,23 @@ const words = [
   height={460}
   spacing={6}
 />`,
+
+  overflow: `\
+// wrapAtPercent — wrap words wider than N% of the container width.
+<ReactJQCloud
+  words={words}
+  width="100%"
+  height={460}
+  wrapAtPercent={20}
+/>
+
+// ellipsisAtPercent — truncate words wider than N% with "…".
+<ReactJQCloud
+  words={words}
+  width="100%"
+  height={460}
+  ellipsisAtPercent={20}
+/>`,
 };
 
 // ─── Self-contained demos ─────────────────────────────────────────────────────
@@ -837,9 +854,66 @@ function SpacingDemo() {
   );
 }
 
+type OverflowMode = 'none' | 'wrap' | 'ellipsis';
+
+function OverflowDemo() {
+  const [mode, setMode] = useState<OverflowMode>('none');
+  const [threshold, setThreshold] = useState(20);
+  const [cloudKey, setCloudKey] = useState(0);
+
+  function reset() { setCloudKey(k => k + 1); }
+
+  const modes: { key: OverflowMode; label: string }[] = [
+    { key: 'none',     label: 'No limit' },
+    { key: 'wrap',     label: 'wrapAtPercent' },
+    { key: 'ellipsis', label: 'ellipsisAtPercent' },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {modes.map(m => (
+            <button key={m.key} onClick={() => { setMode(m.key); reset(); }} style={{
+              padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc',
+              background: mode === m.key ? '#0070f3' : '#fff',
+              color: mode === m.key ? '#fff' : '#333',
+              cursor: 'pointer', fontWeight: mode === m.key ? 600 : 400,
+            }}>{m.label}</button>
+          ))}
+        </div>
+        {mode !== 'none' && (
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            Max width:
+            <input type="range" min={5} max={60} step={5} value={threshold}
+              onChange={e => { setThreshold(Number(e.target.value)); reset(); }} style={{ width: 120 }} />
+            <code style={{ minWidth: 40, fontSize: 13 }}>{threshold}%</code>
+          </label>
+        )}
+      </div>
+
+      <ReactJQCloud
+        key={cloudKey}
+        words={longWords}
+        width="100%"
+        height={460}
+        wrapAtPercent={mode === 'wrap' ? threshold : undefined}
+        ellipsisAtPercent={mode === 'ellipsis' ? threshold : undefined}
+        style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
+      />
+
+      <p style={{ marginTop: 8, fontSize: 12, color: '#888' }}>
+        Long words dataset. <code>wrapAtPercent</code> breaks onto multiple lines;{' '}
+        <code>ellipsisAtPercent</code> truncates with "…". Both accept a percentage of the container width.
+      </p>
+      <ShowCode code={SNIPPETS['overflow']!} />
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
-type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html' | 'tooltip' | 'hashtag' | 'spacing';
+type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html' | 'tooltip' | 'hashtag' | 'spacing' | 'overflow';
 
 const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }[] = [
   { key: 'basic',      label: 'Basic',           words: basicWords,   description: '20 words — shape toggle' },
@@ -854,6 +928,7 @@ const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }
   { key: 'tooltip',    label: 'Tooltip',           words: [],           description: 'renderTooltip prop: hover a word to show a custom tooltip rendered in a portal.' },
   { key: 'hashtag',    label: 'Hashtag prefix',    words: [],           description: 'renderText prop: prepend "#" to every word label without changing layout sizing.' },
   { key: 'spacing',    label: 'Spacing',           words: [],           description: '50 words — drag the slider to add breathing room between words via the spacing prop.' },
+  { key: 'overflow',   label: 'Wrap / Ellipsis',   words: [],           description: 'wrapAtPercent and ellipsisAtPercent props: constrain long words to a max percentage of the container width.' },
 ];
 
 export default function App() {
@@ -864,7 +939,7 @@ export default function App() {
   const [clicked, setClicked] = useState<string | null>(null);
 
   const current = DEMOS.find(d => d.key === demo)!;
-  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html' || demo === 'tooltip' || demo === 'hashtag' || demo === 'spacing';
+  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html' || demo === 'tooltip' || demo === 'hashtag' || demo === 'spacing' || demo === 'overflow';
 
   useEffect(() => {
     const id = 'rwc-spin-style';
@@ -947,6 +1022,8 @@ export default function App() {
         <HashtagDemo key="hashtag" />
       ) : demo === 'spacing' ? (
         <SpacingDemo key="spacing" />
+      ) : demo === 'overflow' ? (
+        <OverflowDemo key="overflow" />
       ) : (
         <>
           <ReactJQCloud

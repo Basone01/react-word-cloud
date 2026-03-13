@@ -79,6 +79,8 @@ The stylesheet provides the default `w1`–`w10` color classes. You can skip it 
 | `fontFamily` | `string` | inherited | Font family applied to every word. |
 | `removeOverflowing` | `boolean` | `true` | Drop words whose bounding box extends outside the container. |
 | `spacing` | `number` | `0` | Extra pixels of padding added around each word's bounding box during collision detection. Increase to add breathing room between words. |
+| `wrapAtPercent` | `number` | — | Max width as a percentage of the container width. Words wider than this wrap onto multiple lines. |
+| `ellipsisAtPercent` | `number` | — | Max width as a percentage of the container width. Words wider than this are truncated with `…`. |
 | `shrinkToFit` | `boolean` | `false` | Iteratively reduce font scale (down to 30 % of original) until all words fit inside the container. Overrides `removeOverflowing`. |
 | `wordDelay` | `number` | `0` | Milliseconds between each word appearing after layout. Words reveal in weight-descending order (heaviest first). `0` = all words appear at once. |
 | `colors` | `string[]` | — | 10-element color array indexed by weight class (index 0 = class `w1`). Overrides CSS classes. |
@@ -268,6 +270,30 @@ Pass `renderTooltip` to show a tooltip on hover. It receives the `Word` object a
 ```
 
 The tooltip div is positioned above the hovered word via `position: fixed` + `transform: translate(-50%, -100%)`. You have full control over its appearance through the returned node.
+
+### Wrapping and truncating long words
+
+Use `wrapAtPercent` to let long words wrap onto multiple lines, or `ellipsisAtPercent` to clip them with `…`. Both accept a percentage of the container width.
+
+```tsx
+// Wrap words that exceed 25 % of the container width
+<ReactJQCloud
+  words={words}
+  width={600}
+  height={400}
+  wrapAtPercent={25}
+/>
+
+// Truncate words that exceed 25 % of the container width
+<ReactJQCloud
+  words={words}
+  width={600}
+  height={400}
+  ellipsisAtPercent={25}
+/>
+```
+
+> The same `maxWidth` is applied during the invisible pass-1 measurement, so the layout correctly accounts for wrapped or clipped dimensions.
 
 ### Adding HTML attributes to words
 

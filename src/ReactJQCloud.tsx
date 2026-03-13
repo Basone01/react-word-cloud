@@ -15,6 +15,8 @@ export function ReactJQCloud({
   shape = "elliptic",
   removeOverflowing = true,
   spacing = 0,
+  wrapAtPercent,
+  ellipsisAtPercent,
   shrinkToFit = false,
   fontSizes = [12, 60],
   fontFamily,
@@ -242,7 +244,11 @@ export function ReactJQCloud({
           visibility: isRevealed ? "visible" : "hidden",
           left: pos ? pos.left : 0,
           top: pos ? pos.top : 0,
-          whiteSpace: "nowrap",
+          whiteSpace: wrapAtPercent ? "normal" : "nowrap",
+          ...(wrapAtPercent ? { maxWidth: `${wrapAtPercent}%`, wordBreak: "break-word" } : {}),
+          ...(ellipsisAtPercent
+            ? { maxWidth: `${ellipsisAtPercent}%`, overflow: "hidden", textOverflow: "ellipsis" }
+            : {}),
           ...(word.color
             ? { color: word.color }
             : colors?.[weightClass - 1]
