@@ -507,6 +507,27 @@ const words = [
   height={460}
   ellipsisAtPercent={20}
 />`,
+
+  colors: `\
+// Pass a 10-element array to colors.
+// Index 0 = lightest words (w1), index 9 = heaviest (w10).
+const sunset = [
+  '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706',
+  '#b45309', '#92400e', '#78350f', '#6b21a8', '#4c1d95',
+];
+
+<ReactJQCloud
+  words={words}
+  width="100%"
+  height={460}
+  colors={sunset}
+/>
+
+// Per-word color overrides the colors prop and CSS classes.
+const words = [
+  { text: 'React', weight: 10, color: '#e63946' },
+  { text: 'TypeScript', weight: 8 },
+];`,
 };
 
 // ─── Self-contained demos ─────────────────────────────────────────────────────
@@ -1155,9 +1176,126 @@ function PlaygroundDemo() {
   );
 }
 
+// ─── Colors Demo ──────────────────────────────────────────────────────────────
+
+const PALETTES: { name: string; colors: string[] }[] = [
+  {
+    name: 'Sunset',
+    colors: ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706', '#b45309', '#92400e', '#78350f', '#6b21a8', '#4c1d95'],
+  },
+  {
+    name: 'Ocean',
+    colors: ['#e0f2fe', '#bae6fd', '#7dd3fc', '#38bdf8', '#0ea5e9', '#0284c7', '#0369a1', '#075985', '#0c4a6e', '#082f49'],
+  },
+  {
+    name: 'Forest',
+    colors: ['#d9f99d', '#bef264', '#a3e635', '#84cc16', '#65a30d', '#4d7c0f', '#3f6212', '#365314', '#1a2e05', '#052e16'],
+  },
+  {
+    name: 'Rose',
+    colors: ['#ffe4e6', '#fecdd3', '#fda4af', '#fb7185', '#f43f5e', '#e11d48', '#be123c', '#9f1239', '#881337', '#4c0519'],
+  },
+  {
+    name: 'Mono',
+    colors: ['#d4d4d4', '#a3a3a3', '#737373', '#525252', '#404040', '#262626', '#171717', '#0a0a0a', '#000000', '#000000'],
+  },
+];
+
+const CSS_STYLE_ID = 'rwc-colors-demo-style';
+
+function ColorsDemo() {
+  const [paletteIdx, setPaletteIdx] = useState(0);
+  const [method, setMethod] = useState<'prop' | 'css'>('prop');
+  const palette = PALETTES[paletteIdx]!;
+
+  // Inject / update a <style> tag for the CSS method
+  useEffect(() => {
+    let el = document.getElementById(CSS_STYLE_ID) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement('style');
+      el.id = CSS_STYLE_ID;
+      document.head.appendChild(el);
+    }
+    el.textContent = palette.colors
+      .map((c, i) => `.my-cloud .w${i + 1} { color: ${c}; }`)
+      .join('\n');
+    return () => { if (el) el.textContent = ''; };
+  }, [palette]);
+
+  const colorSwatches = palette.colors.map((c, i) => `  '${c}', // w${i + 1}`).join('\n');
+  const propSnippet = `const colors = [\n${colorSwatches}\n];\n\n<ReactJQCloud\n  words={words}\n  width="100%"\n  height={460}\n  colors={colors}\n/>`;
+
+  const cssSnippet = `/* your-styles.css */\n${palette.colors.map((c, i) => `.my-cloud .w${i + 1} { color: ${c}; }`).join('\n')}\n\n// component\n<ReactJQCloud\n  words={words}\n  width="100%"\n  height={460}\n  className="my-cloud"\n/>`;
+
+  const btnBase: React.CSSProperties = { padding: '4px 14px', borderRadius: 5, border: '1px solid #ccc', fontSize: 12, cursor: 'pointer' };
+  const btnActive: React.CSSProperties = { background: '#0070f3', color: '#fff', fontWeight: 600, borderColor: '#0070f3' };
+  const btnInactive: React.CSSProperties = { background: '#fff', color: '#333' };
+
+  return (
+    <div>
+      {/* Method toggle */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 13, color: '#555' }}>Method:</span>
+        <button style={{ ...btnBase, ...(method === 'prop' ? btnActive : btnInactive) }} onClick={() => setMethod('prop')}>
+          colors prop
+        </button>
+        <button style={{ ...btnBase, ...(method === 'css' ? btnActive : btnInactive) }} onClick={() => setMethod('css')}>
+          CSS classes
+        </button>
+      </div>
+
+      {/* Palette picker */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, color: '#555' }}>Palette:</span>
+        {PALETTES.map((p, i) => (
+          <button
+            key={p.name}
+            onClick={() => setPaletteIdx(i)}
+            style={{ ...btnBase, ...(paletteIdx === i ? btnActive : btnInactive) }}
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Swatch strip */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+        {palette.colors.map((c, i) => (
+          <div key={i} title={`w${i + 1}: ${c}`} style={{ flex: 1, height: 28, background: c, borderRadius: 4, border: '1px solid rgba(0,0,0,0.08)' }}>
+            <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)', textAlign: 'center', paddingTop: 7 }}>w{i + 1}</div>
+          </div>
+        ))}
+      </div>
+
+      <ReactJQCloud
+        key={`${paletteIdx}-${method}`}
+        words={fiftyWords}
+        width="100%"
+        height={460}
+        colors={method === 'prop' ? palette.colors : undefined}
+        className={method === 'css' ? 'my-cloud' : undefined}
+        style={{ border: '1px solid #ddd', borderRadius: 8, background: '#fafafa' }}
+      />
+
+      {method === 'prop' ? (
+        <p style={{ marginTop: 8, fontSize: 12, color: '#888' }}>
+          Pass a 10-element <code>colors</code> array — index 0 maps to the lightest words (<code>w1</code>), index 9 to the heaviest (<code>w10</code>).
+          A per-word <code>color</code> field overrides the array.
+        </p>
+      ) : (
+        <p style={{ marginTop: 8, fontSize: 12, color: '#888' }}>
+          Add a <code>className</code> to the component and target <code>.my-cloud .w1</code>–<code>.w10</code> in your stylesheet.
+          Each word automatically receives its weight class so you get full CSS control.
+        </p>
+      )}
+      <ShowCode code={method === 'prop' ? propSnippet : cssSnippet} />
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
-type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html' | 'tooltip' | 'hashtag' | 'spacing' | 'overflow' | 'playground';
+type DemoKey = 'basic' | 'links' | 'long' | 'fifty' | 'delay' | 'word-delay' | 'shrink' | 'fluid' | 'html' | 'tooltip' | 'hashtag' | 'spacing' | 'overflow' | 'colors' | 'playground';
 
 const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }[] = [
   { key: 'basic',      label: 'Basic',           words: basicWords,   description: '20 words — shape toggle' },
@@ -1173,6 +1311,7 @@ const DEMOS: { key: DemoKey; label: string; words: Word[]; description: string }
   { key: 'hashtag',    label: 'Hashtag prefix',    words: [],           description: 'renderText prop: prepend "#" to every word label without changing layout sizing.' },
   { key: 'spacing',    label: 'Spacing',           words: [],           description: '50 words — drag the slider to add breathing room between words via the spacing prop.' },
   { key: 'overflow',    label: 'Wrap / Ellipsis',   words: [],           description: 'wrapAtPercent and ellipsisAtPercent props: constrain long words to a max percentage of the container width.' },
+  { key: 'colors',     label: 'Custom colors',     words: [],           description: 'colors prop: supply a 10-element palette mapped to weight classes w1–w10. Switch between preset palettes.' },
   { key: 'playground', label: '🛝 Playground',      words: [],           description: 'Live playground — toggle every prop and switch datasets (incl. Thai). Generates code as you go.' },
 ];
 
@@ -1184,7 +1323,7 @@ export default function App() {
   const [clicked, setClicked] = useState<string | null>(null);
 
   const current = DEMOS.find(d => d.key === demo)!;
-  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html' || demo === 'tooltip' || demo === 'hashtag' || demo === 'spacing' || demo === 'overflow' || demo === 'playground';
+  const isSelfContained = demo === 'delay' || demo === 'word-delay' || demo === 'shrink' || demo === 'fluid' || demo === 'html' || demo === 'tooltip' || demo === 'hashtag' || demo === 'spacing' || demo === 'overflow' || demo === 'colors' || demo === 'playground';
 
   useEffect(() => {
     const id = 'rwc-spin-style';
@@ -1282,6 +1421,8 @@ export default function App() {
         <SpacingDemo key="spacing" />
       ) : demo === 'overflow' ? (
         <OverflowDemo key="overflow" />
+      ) : demo === 'colors' ? (
+        <ColorsDemo key="colors" />
       ) : demo === 'playground' ? (
         <PlaygroundDemo key="playground" />
       ) : (
